@@ -1,0 +1,32 @@
+version: "3.3"
+
+services:
+
+  ckb-node:
+    image: nervos/ckb:v0.120.0
+    ports: 
+      - "8114:8114" # RPC
+      - "8115:8115" # Blockchain
+    networks:
+      - default
+    environment:
+      CKB_CHAIN: "mainnet"
+    volumes:
+      - "./ckb-node/mainnet:/var/lib/ckb"
+    command: ["run"]
+    restart: always
+      
+  fi5pool:
+    image: ghcr.io/fi5box/fi5pool:v0.3.7
+    ports:
+      - "4610:4610"
+      - "8888:8888"
+    working_dir: /opt
+    volumes:
+      - "./fi5pool/config:/opt"
+      - "./fi5pool/logs:/tmp/logs"
+    networks:
+      - default
+    restart: always
+
+

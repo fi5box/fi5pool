@@ -1,0 +1,80 @@
+[package]
+name = "fi5pool"
+version = "0.3.7"
+authors = ["Fi5 <contact@fi5box.com>"]
+edition = "2021"
+
+[package.metadata.deb]
+maintainer = "Fi5 <contact@fi5box.com>"
+section = "utility"
+maintainer-scripts = "."
+systemd-units = { unit-name = "fi5pool", enable = true, start = true, restart-after-upgrade = true }
+depends = ""
+assets = [
+    [
+        "target/x86_64-unknown-linux-musl/release/fi5pool",
+        "usr/bin/",
+        "755",
+    ],
+]
+
+[dependencies]
+byteorder = "1.5"
+chrono = "0.4"
+ckb-jsonrpc-types = "0.121"
+ckb-types = "0.121"
+clap = { version = "4.5", features = ["derive"] }
+color-eyre = "0.6"
+common_x = { version = "0.8", features = [
+    "config",
+    "log",
+    "mailer",
+    "restful",
+    "signal",
+] }
+eaglesong = "0.1"
+futures = "0.3"
+hex = "0.4"
+influxdb2 = "0.5"
+notify = "8.0"
+openssl = { version = "0.10", features = ["vendored"] }
+rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json"] }
+ringbuf = { version = "0.4", default-features = false }
+serde = { version = "1.0", default-features = false, features = [
+    "derive",
+    "alloc",
+] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+tokio = { version = "1.43", features = ["macros", "rt-multi-thread", "sync"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+tower-http = { version = "0.6", features = ["fs", "cors", "trace", "timeout"] }
+tracing = { version = "0.1", default-features = false }
+
+[lints.clippy]
+missing_const_for_fn = "warn"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_copy_implementations = "warn"
+missing_debug_implementations = "warn"
+unused_crate_dependencies = "warn"
+unused_extern_crates = "warn"
+
+[profile.dev]
+debug = true
+opt-level = 0
+
+[profile.fast]
+inherits = "release"
+opt-level = 3
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+
+[profile.release]
+debug = false
+lto = "fat"
+opt-level = 3
+codegen-units = 1

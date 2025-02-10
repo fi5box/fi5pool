@@ -1,0 +1,12 @@
+[Unit]
+Description=fi5pool
+
+[Service]
+Restart=always
+TimeoutSec=0
+RestartSec=5
+ExecStart=/usr/bin/fi5pool
+ExecReload=/usr/bin/fi5pool
+
+[Install]
+WantedBy=multi-user.target

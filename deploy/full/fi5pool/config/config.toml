@@ -1,0 +1,15 @@
+difficulty = 2_000_000_000_000_000
+pull_block_template_interval = 500
+rpc_listen_port = 4610
+ckb_rpc_url = "http://ckb-node:8114"
+rpc_timeout = 2000
+[influx]
+url = "http://influxdb2:8086"
+org = "fi5"
+token = "QYkxPYNVED4iHxiHMZ4oUxl/vTLEWKtSkBoHfZl9Qz0="
+share_bucket = "share-bucket"
+block_bucket = "block-bucket"
+log_bucket = "log-bucket"
+[log_config]
+filter = "info"
+rolling_file = ["/tmp/logs", "fi5pool"]

@@ -1,0 +1,8 @@
+difficulty = 2_000_000_000_000_000
+pull_block_template_interval = 500
+rpc_listen_port = 4610
+ckb_rpc_url = "http://ckb-node:8114"
+rpc_timeout = 2000
+[log_config]
+filter = "info"
+rolling_file = ["/tmp/logs", "fi5pool"]
