@@ -111,7 +111,7 @@ impl Worker {
             if let Err(e) = worker.mining(broadcast_rv, lines).await {
                 let msg = format!("[{}] - worker offline: {e}", worker.label);
                 warn!("{msg}");
-                worker.alert(msg).await;
+                worker.alert(Alert::Disconnected, msg).await;
             }
         });
     }
@@ -123,6 +123,10 @@ impl Worker {
     ) -> Result<()> {
         let (mut writer, mut reader) = lines.split::<String>();
         let mut interval = tokio::time::interval(Duration::from_millis(100));
+        let mut timeout_to_mining =
+            tokio::time::interval(Duration::from_secs(self.config.timeout_to_mining));
+        // not to wait for the first interval
+        timeout_to_mining.tick().await;
         loop {
             tokio::select! {
                 _ = interval.tick(), if self.stage == Stage::SetTarget || self.stage == Stage::InitJob => match self.stage {
@@ -167,11 +171,16 @@ impl Worker {
                                 .is_ok()
                             {
                                 self.stage = Stage::Mining;
-                                info!("[{}] - Stage: InitJob -> Mining", self.label);
+                                let msg = format!("[{}] - Stage: InitJob -> Mining", self.label);
+                                info!("{msg}");
+                                self.save_log("Mining", &msg).await.ok();
                             }
                         }
                     }
                     _ => {}
+                },
+                _ = timeout_to_mining.tick(), if self.stage != Stage::Mining => {
+                    break Err(eyre!("time out to mining"));
                 },
                 msg = reader.next() => match msg {
                     Some(Ok(message)) => {
@@ -362,12 +371,11 @@ impl Worker {
                         self.save_shares(ShareType::Valid).await?;
                         self.save_block(height).await?;
                         if !result {
-                            self.save_alert(&format!(
-                                "[{}] - submit failed: height({})",
-                                self.label, height
-                            ))
-                            .await
-                            .ok();
+                            self.alert(
+                                Alert::Unexpected,
+                                format!("[{}] - submit failed: height({})", self.label, height),
+                            )
+                            .await;
                         }
 
                         Ok(Some(Response::ok(request.id, true)))
@@ -528,13 +536,14 @@ impl Worker {
         Ok(())
     }
 
-    async fn save_alert(&self, alert: &str) -> Result<()> {
+    async fn save_log(&self, field: &str, value: &str) -> Result<()> {
         if let Some(influx) = &self.influx_client {
             if let Some(c) = &self.config.influx {
-                let point = DataPoint::builder("alert")
+                let point = DataPoint::builder("log")
+                    .tag("worker", self.worker.clone().unwrap_or_default())
                     .tag("miner", self.miner.clone().unwrap_or_default())
                     .tag("node", self.config.ckb_rpc_url.clone())
-                    .field("alert", alert);
+                    .field(field, value);
 
                 let points = vec![point.build()?];
 
@@ -551,8 +560,14 @@ impl Worker {
     }
 }
 
+#[derive(Debug)]
+enum Alert {
+    Disconnected,
+    Unexpected,
+}
+
 impl Worker {
-    async fn alert(&self, msg: String) {
+    async fn alert(&self, alert_type: Alert, msg: String) {
         let alert = json!({
             "msg": msg,
             "status": {
@@ -569,7 +584,9 @@ impl Worker {
         });
 
         // influxdb alert
-        self.save_alert(&alert.to_string()).await.ok();
+        self.save_log(&format!("{alert_type:?}"), &alert.to_string())
+            .await
+            .ok();
 
         // mail alert
         if let Some(mailer_config) = &self.config.mailer {
