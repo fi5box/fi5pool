@@ -26,13 +26,13 @@ use ckb_types::{packed, prelude::*};
 use color_eyre::Result;
 use common_x::signal::waiting_for_shutdown;
 use futures::stream;
-use influxdb2::{api::write::TimestampPrecision, models::DataPoint, Client};
+use influxdb2::{Client, api::write::TimestampPrecision, models::DataPoint};
 use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 use serde_json::json;
 use std::{path::Path, sync::Arc};
 use tokio::{
     net::TcpListener,
-    sync::{broadcast, RwLock},
+    sync::{RwLock, broadcast},
 };
 use tracing::info;
 

@@ -16,8 +16,8 @@ use std::time::Duration;
 
 use ckb_jsonrpc_types::{Block, BlockTemplate};
 use ckb_types::H256;
-use color_eyre::eyre::{eyre, Result};
-use serde_json::{json, Value};
+use color_eyre::eyre::{Result, eyre};
+use serde_json::{Value, json};
 
 #[inline]
 pub async fn pull_block_template(ckb_jsonrpc_url: &str, time_out: u64) -> Result<BlockTemplate> {

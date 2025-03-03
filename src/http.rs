@@ -17,20 +17,20 @@ use std::{sync::Arc, time::Duration};
 use ckb_jsonrpc_types::BlockTemplate;
 use color_eyre::Result;
 use common_x::restful::{
+    RESTfulError,
     axum::{
-        self,
+        self, Json, Router,
         extract::State,
         response::IntoResponse,
         routing::{get, post},
-        Json, Router,
     },
-    ok_simple, RESTfulError,
+    ok_simple,
 };
 use reqwest::{Method, StatusCode};
 use serde_json::json;
 use tokio::{
     net::TcpListener,
-    sync::{broadcast, RwLock},
+    sync::{RwLock, broadcast},
 };
 use tower_http::{cors::CorsLayer, timeout::TimeoutLayer, trace::TraceLayer};
 

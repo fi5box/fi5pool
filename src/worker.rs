@@ -19,19 +19,19 @@ use crate::{
     json_rpc::{Message, Notification, Request, Response},
 };
 
-use ckb_types::{prelude::*, U256};
-use color_eyre::{eyre::eyre, Result};
+use ckb_types::{U256, prelude::*};
+use color_eyre::{Result, eyre::eyre};
 use futures::{
-    stream::{self, SplitSink},
     SinkExt, StreamExt,
+    stream::{self, SplitSink},
 };
-use influxdb2::{api::write::TimestampPrecision, models::DataPoint, Client};
+use influxdb2::{Client, api::write::TimestampPrecision, models::DataPoint};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tokio::{
     net::TcpStream,
-    sync::{broadcast::Receiver, RwLock},
+    sync::{RwLock, broadcast::Receiver},
 };
 use tokio_util::codec::{Framed, LinesCodec};
 use tracing::{info, warn};
@@ -208,14 +208,11 @@ impl Worker {
                                 params: [json!(target)].to_vec(),
                             };
                             info!("[{}] - Sending: {:?}", self.label, &req);
-                            if writer
+                            writer
                                 .send(serde_json::to_string(&Message::Request(req))?)
-                                .await
-                                .is_ok()
-                            {
-                                self.stage = Stage::InitJob;
-                                info!("[{}] - Stage: SetTarget -> InitJob", self.label);
-                            }
+                                .await?;
+                            self.stage = Stage::InitJob;
+                            info!("[{}] - Stage: SetTarget -> InitJob", self.label);
                         }
                         Message::Notification(_) =>
                             if self.stage == Stage::Mining {

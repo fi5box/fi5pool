@@ -2,7 +2,7 @@
 name = "fi5pool"
 version = "0.3.7"
 authors = ["Fi5 <contact@fi5box.com>"]
-edition = "2021"
+edition = "2024"
 
 [package.metadata.deb]
 maintainer = "Fi5 <contact@fi5box.com>"

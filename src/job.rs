@@ -16,10 +16,10 @@ use core::fmt;
 use std::collections::HashMap;
 
 use ckb_jsonrpc_types::BlockTemplate;
-use ckb_types::{packed::Block, prelude::Unpack, utilities::compact_to_target, H256, U256};
+use ckb_types::{H256, U256, packed::Block, prelude::Unpack, utilities::compact_to_target};
 use ringbuf::{
-    traits::{Consumer, RingBuffer},
     StaticRb,
+    traits::{Consumer, RingBuffer},
 };
 use serde::Serialize;
 
